@@ -58,7 +58,12 @@ public abstract class AbstractJobEnvironment {
 
     protected final IdGenerator idGenerator;
 
-    protected final List<URL> commonPluginJars = new ArrayList<>();
+    //    protected final List<URL> commonPluginJars = new ArrayList<>();
+    protected static final List<URL> commonPluginJars = new ArrayList<>();
+
+    public static List<URL> getCommonPluginJars() {
+        return commonPluginJars;
+    }
 
     public AbstractJobEnvironment(JobConfig jobConfig, boolean isStartWithSavePoint) {
         LOGGER = Logger.getLogger(getClass().getName());

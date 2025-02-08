@@ -39,6 +39,7 @@ import org.apache.seatunnel.common.exception.SeaTunnelRuntimeException;
 import org.apache.seatunnel.common.utils.JdbcUrlUtil;
 import org.apache.seatunnel.common.utils.SeaTunnelException;
 import org.apache.seatunnel.connectors.seatunnel.jdbc.catalog.utils.CatalogUtils;
+import org.apache.seatunnel.engine.core.job.AbstractJobEnvironment;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -47,6 +48,9 @@ import org.slf4j.LoggerFactory;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -117,7 +121,25 @@ public abstract class AbstractJdbcCatalog implements Catalog {
             return connectionMap.get(url);
         }
         try {
-            Connection connection = DriverManager.getConnection(url, username, pwd);
+            Connection connection;
+            // begin modify
+            try {
+                connection = DriverManager.getConnection(url, username, pwd);
+            } catch (Exception e) {
+                List<URL> commonPluginJars = AbstractJobEnvironment.getCommonPluginJars();
+                for (URL commonPluginJar : commonPluginJars) {
+                    ClassLoader cl = getClass().getClassLoader();
+                    try {
+                        Method addURL = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+                        addURL.setAccessible(true);
+                        addURL.invoke(cl, commonPluginJar);
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+                connection = DriverManager.getConnection(url, username, pwd);
+            } // end modified
+            //            Connection connection = DriverManager.getConnection(url, username, pwd);
             connectionMap.put(url, connection);
             return connection;
         } catch (SQLException e) {
