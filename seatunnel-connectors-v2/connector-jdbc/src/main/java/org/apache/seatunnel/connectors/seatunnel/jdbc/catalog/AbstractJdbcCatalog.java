@@ -39,7 +39,7 @@ import org.apache.seatunnel.common.exception.SeaTunnelRuntimeException;
 import org.apache.seatunnel.common.utils.JdbcUrlUtil;
 import org.apache.seatunnel.common.utils.SeaTunnelException;
 import org.apache.seatunnel.connectors.seatunnel.jdbc.catalog.utils.CatalogUtils;
-import org.apache.seatunnel.engine.core.job.AbstractJobEnvironment;
+import org.apache.seatunnel.connectors.seatunnel.jdbc.internal.dialect.DatabaseIdentifier;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -48,9 +48,6 @@ import org.slf4j.LoggerFactory;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -104,6 +101,77 @@ public abstract class AbstractJdbcCatalog implements Catalog {
         this.suffix = urlInfo.getSuffix();
         this.defaultSchema = Optional.ofNullable(defaultSchema);
         this.connectionMap = new ConcurrentHashMap<>();
+        try {
+            //            String driverClassName = getDriverClassName();
+            //            ClassLoader contextClassLoader =
+            // Thread.currentThread().getContextClassLoader();
+            Class.forName(
+                    getDriverClassName(catalogName),
+                    true,
+                    Thread.currentThread().getContextClassLoader());
+            //            Class<?> driverCls = Class.forName(driverClassName, true,
+            // contextClassLoader);
+            //            java.sql.Driver d = (java.sql.Driver)
+            // driverCls.getDeclaredConstructor().newInstance();
+            //            DriverManager.registerDriver(new DriverShim(d));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String getDriverClassName(String catalogName) {
+        if (catalogName.equalsIgnoreCase(DatabaseIdentifier.POSTGRESQL)) {
+            return "org.postgresql.Driver";
+        }
+        if (catalogName.equalsIgnoreCase(DatabaseIdentifier.SQLSERVER)) {
+            return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+        }
+        if (catalogName.equalsIgnoreCase(DatabaseIdentifier.ORACLE)) {
+            return "oracle.jdbc.driver.OracleDriver";
+        }
+        if (catalogName.equalsIgnoreCase(DatabaseIdentifier.MYSQL)) {
+            return "com.mysql.cj.jdbc.Driver";
+        }
+        if (catalogName.equalsIgnoreCase(DatabaseIdentifier.DB_2)) {
+            return "com.ibm.db2.jcc.DB2Driver";
+        }
+        if (catalogName.equalsIgnoreCase(DatabaseIdentifier.DAMENG)) {
+            return "dm.jdbc.driver.DmDriver";
+        }
+        if (catalogName.equalsIgnoreCase(DatabaseIdentifier.GBASE_8A)) {
+            return "com.gbase.jdbc.Driver";
+        }
+        if (catalogName.equalsIgnoreCase(DatabaseIdentifier.HIVE)) {
+            return "org.apache.hive.jdbc.HiveDriver";
+        }
+        if (catalogName.equalsIgnoreCase(DatabaseIdentifier.PHOENIX)) {
+            return "org.apache.phoenix.jdbc.PhoenixDriver";
+        }
+        if (catalogName.equalsIgnoreCase(DatabaseIdentifier.TIDB)) {
+            return "com.mysql.cj.jdbc.Driver";
+        }
+        if (catalogName.equalsIgnoreCase(DatabaseIdentifier.TERADATA)) {
+            return "com.teradata.jdbc.TeraDriver";
+        }
+        if (catalogName.equalsIgnoreCase(DatabaseIdentifier.SQLITE)) {
+            return "org.sqlite.JDBC";
+        }
+        if (catalogName.equalsIgnoreCase(DatabaseIdentifier.SNOWFLAKE)) {
+            return "net.snowflake.client.jdbc.SnowflakeDriver";
+        }
+        if (catalogName.equalsIgnoreCase(DatabaseIdentifier.REDSHIFT)) {
+            return "com.amazon.redshift.jdbc.Driver";
+        }
+        if (catalogName.equalsIgnoreCase(DatabaseIdentifier.TABLE_STORE)) {
+            return "com.aliyun.openservices.tablestore.jdbc.Driver";
+        }
+        if (catalogName.equalsIgnoreCase(DatabaseIdentifier.SAP_HANA)) {
+            return "com.sap.db.jdbc.Driver";
+        }
+        if (catalogName.equalsIgnoreCase(DatabaseIdentifier.STARROCKS)) {
+            return "com.starrocks.jdbc.Driver";
+        }
+        return "org.apache.seatunnel.db.jdbc.UnknownDriver";
     }
 
     @Override
@@ -121,25 +189,27 @@ public abstract class AbstractJdbcCatalog implements Catalog {
             return connectionMap.get(url);
         }
         try {
-            Connection connection;
+            //            Connection connection;
             // begin modify
-            try {
-                connection = DriverManager.getConnection(url, username, pwd);
-            } catch (Exception e) {
-                List<URL> commonPluginJars = AbstractJobEnvironment.getCommonPluginJars();
-                for (URL commonPluginJar : commonPluginJars) {
-                    ClassLoader cl = getClass().getClassLoader();
-                    try {
-                        Method addURL = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-                        addURL.setAccessible(true);
-                        addURL.invoke(cl, commonPluginJar);
-                    } catch (Exception ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }
-                connection = DriverManager.getConnection(url, username, pwd);
-            } // end modified
-            //            Connection connection = DriverManager.getConnection(url, username, pwd);
+            //            try {
+            //                connection = DriverManager.getConnection(url, username, pwd);
+            //            } catch (Exception e) {
+            //                List<URL> commonPluginJars =
+            // AbstractJobEnvironment.getCommonPluginJars();
+            //                for (URL commonPluginJar : commonPluginJars) {
+            //                    ClassLoader cl = getClass().getClassLoader();
+            //                    try {
+            //                        Method addURL =
+            // URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+            //                        addURL.setAccessible(true);
+            //                        addURL.invoke(cl, commonPluginJar);
+            //                    } catch (Exception ex) {
+            //                        throw new RuntimeException(ex);
+            //                    }
+            //                }
+            //                connection = DriverManager.getConnection(url, username, pwd);
+            //            } // end modified
+            Connection connection = DriverManager.getConnection(url, username, pwd);
             connectionMap.put(url, connection);
             return connection;
         } catch (SQLException e) {

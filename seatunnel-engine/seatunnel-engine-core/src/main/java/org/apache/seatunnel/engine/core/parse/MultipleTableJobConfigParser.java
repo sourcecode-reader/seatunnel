@@ -223,6 +223,27 @@ public class MultipleTableJobConfigParser {
             Set<URL> factoryUrls = getUsedFactoryUrls(sinkActions);
             return new ImmutablePair<>(sinkActions, factoryUrls);
         } finally {
+            // 在 DriverManager 中移除本 classloader 注册的 driver
+            //            Enumeration<Driver> drivers = DriverManager.getDrivers();
+            //            System.out.println("DriverManager.getDrivers is: " + drivers);
+            //            while (drivers.hasMoreElements()) {
+            //                Driver driver = drivers.nextElement();
+            //                System.out.println(driver.getClass() + " : " +
+            // driver.getClass().getName());
+            //                System.out.println(driver.getClass().getClassLoader() + " : " +
+            // classLoader);
+            //                if (driver.getClass().getClassLoader() == classLoader) {
+            //                    try {
+            //                        DriverManager.deregisterDriver(driver);
+            //                    } catch (SQLException e) {
+            //                        log.error(
+            //                                "{} deregisterDriver failed, driver class = {}",
+            //                                Thread.currentThread().getContextClassLoader(),
+            //                                driver.getClass());
+            //                    }
+            //                }
+            //            }
+
             Thread.currentThread().setContextClassLoader(parentClassLoader);
             if (classLoaderService != null) {
                 classLoaderService.releaseClassLoader(
