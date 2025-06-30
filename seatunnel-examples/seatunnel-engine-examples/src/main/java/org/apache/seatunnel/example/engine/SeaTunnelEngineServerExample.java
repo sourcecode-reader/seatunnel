@@ -23,6 +23,8 @@ import org.apache.seatunnel.core.starter.seatunnel.args.ServerCommandArgs;
 
 public class SeaTunnelEngineServerExample {
     public static void main(String[] args) throws CommandException {
+        System.setProperty("seatunnel.logs.path", "C:/Users/GCH5SZH/Desktop/developer/SamGO/opensource/seatunnel-logs");
+
         ServerCommandArgs serverCommandArgs = new ServerCommandArgs();
         SeaTunnel.run(serverCommandArgs.buildCommand());
     }

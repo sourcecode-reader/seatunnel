@@ -570,7 +570,7 @@
         <finalName>${project.artifactId}-${project.version}-${scala.version}</finalName>
 
         <pluginManagement>
-            <plugins>
+              <plugins>
 
                 <!-- java/scala compiler (Start) -->
                 <plugin>
