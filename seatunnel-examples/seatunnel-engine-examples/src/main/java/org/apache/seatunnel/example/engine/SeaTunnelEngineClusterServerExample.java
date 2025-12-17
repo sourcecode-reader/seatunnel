@@ -29,6 +29,7 @@ public class SeaTunnelEngineClusterServerExample {
     }
 
     public static void main(String[] args) throws CommandException {
+        System.setProperty("seatunnel.logs.path", "C:/data/runtime/seatunnel/seatunnel-logs");
         ServerCommandArgs serverCommandArgs = new ServerCommandArgs();
         SeaTunnel.run(serverCommandArgs.buildCommand());
     }
